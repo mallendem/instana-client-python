@@ -7,7 +7,7 @@ info:
   description: Documentation for INSTANA REST API
   termsOfService: https://www.instana.com/terms-of-use/
   title: Instana REST API documentation
-  version: 1.324.1358
+  version: 1.326.1571
   x-description: info
   x-ibm-ahub-try: true
   x-logo:
@@ -1255,7 +1255,6 @@ paths:
               example:
               - id: CxJ55sRbQwqBIfw5DzpRmQ
                 label: Discount Canary Build 6987
-                matchSpecification: null
                 tagFilterExpression:
                   type: EXPRESSION
                   logicalOperator: AND
@@ -1362,7 +1361,6 @@ paths:
               example:
                 id: oLyuFtIfQ3eKzAqM5vBGkQ
                 label: Discount Build 6987
-                matchSpecification: null
                 tagFilterExpression:
                   type: EXPRESSION
                   logicalOperator: AND
@@ -1469,7 +1467,6 @@ paths:
               example:
                 id: CxJ55sRbQwqBIfw5DzpRmQ
                 label: Discount Canary Build 6987
-                matchSpecification: null
                 tagFilterExpression:
                   type: EXPRESSION
                   logicalOperator: AND
@@ -1585,7 +1582,6 @@ paths:
               example:
                 id: CxJ55sRbQwqBIfw5DzpRmQ
                 label: Discount Canary Build 6987
-                matchSpecification: null
                 tagFilterExpression:
                   type: EXPRESSION
                   logicalOperator: AND
@@ -7290,8 +7286,6 @@ paths:
           description: OK
         '401':
           description: Unauthorized access - requires user authentication.
-        '403':
-          description: Insufficient permissions or limited in access.
       security:
       - ApiKeyAuth:
         - CanConfigureGlobalAlertPayload
@@ -7388,8 +7382,6 @@ paths:
           description: OK
         '401':
           description: Unauthorized access - requires user authentication.
-        '403':
-          description: Insufficient permissions or limited in access.
       security:
       - ApiKeyAuth:
         - CanConfigureGlobalAlertPayload
@@ -11919,6 +11911,7 @@ paths:
               example:
                 prefix: INSTANA-
                 enabled: true
+                includeInTitle: false
               schema:
                 $ref: '#/components/schemas/PrefixObject'
           description: The current shortcode prefix and enabled state.
@@ -11937,7 +11930,9 @@ paths:
         The prefix will be applied to all new incidents created after this update.
         For example, setting the prefix to 'PROD-' with enabled=true will result in
         incident codes like 'PROD-1', 'PROD-2', etc. The enabled field allows explicit
-        control over whether the shortcode feature is active.
+        control over whether the shortcode feature is active. If the provided prefix
+        is longer than 6 characters, the request returns HTTP 400 with the message
+        'Prefix length exceeds maximum length'.
       operationId: updatePrefix
       requestBody:
         content:
@@ -11948,16 +11943,20 @@ paths:
                 value:
                   prefix: ''
                   enabled: false
-              Enable with custom prefix:
-                description: Enable shortcodes with INSTANA- prefix (default)
+                  includeInTitle: false
+              Enable with custom prefix and include in title:
+                description: Enable shortcodes with INSTA- prefix (default) and include
+                  in incident title
                 value:
-                  prefix: INSTANA-
+                  prefix: INSTA-
                   enabled: true
+                  includeInTitle: true
               Enable with production prefix:
                 description: Enable shortcodes with PROD- prefix for production incidents
                 value:
                   prefix: PROD-
                   enabled: true
+                  includeInTitle: false
             schema:
               $ref: '#/components/schemas/PrefixObject'
         description: The new prefix configuration including the enabled state
@@ -11969,9 +11968,16 @@ paths:
               example:
                 prefix: PROD-
                 enabled: true
+                includeInTitle: false
               schema:
                 $ref: '#/components/schemas/PrefixObject'
           description: The prefix and enabled state were successfully updated.
+        '400':
+          content:
+            application/json:
+              example:
+                message: Prefix length exceeds maximum length
+          description: The provided prefix is longer than 6 characters.
         '401':
           description: Unauthorized access - requires user authentication.
         '403':
@@ -14798,6 +14804,7 @@ paths:
       - AI Management
   /api/llm/gateways:
     get:
+      deprecated: true
       description: Retrieve all AI connections. Optionally filter by enabled status
         or capability.
       operationId: getLLMEgressGateways
@@ -14859,6 +14866,7 @@ paths:
       tags:
       - AI Management
     post:
+      deprecated: true
       description: Create a new AI connection
       operationId: addLLMEgressGateway
       requestBody:
@@ -14929,6 +14937,7 @@ paths:
       - AI Management
   /api/llm/gateways/test:
     post:
+      deprecated: true
       description: Test AI connection connection parameters
       operationId: testLLMGateway
       requestBody:
@@ -14972,6 +14981,7 @@ paths:
       - AI Management
   /api/llm/gateways/{id}:
     delete:
+      deprecated: true
       description: Delete an AI connection by ID.
       operationId: deleteLLMEgressGateway
       parameters:
@@ -14999,6 +15009,7 @@ paths:
       tags:
       - AI Management
     get:
+      deprecated: true
       description: Retrieve an AI connection by ID.
       operationId: getLLMEgressGatewayById
       parameters:
@@ -15053,6 +15064,7 @@ paths:
       tags:
       - AI Management
     put:
+      deprecated: true
       description: Update an existing AI connection by ID.
       operationId: updateLLMEgressGateway
       parameters:
@@ -15132,6 +15144,7 @@ paths:
       - AI Management
   /api/llm/gateways/{id}/disable:
     put:
+      deprecated: true
       description: Disable an AI connection by ID.
       operationId: disableLLMEgressGateway
       parameters:
@@ -15160,6 +15173,7 @@ paths:
       - AI Management
   /api/llm/gateways/{id}/enable:
     put:
+      deprecated: true
       description: Enable an AI connection by ID. Any other enabled connection for
         the same capability will be automatically disabled.
       operationId: enableLLMEgressGateway
@@ -15854,6 +15868,11 @@ paths:
         name: name
         schema:
           type: string
+      - in: query
+        name: businessCriticality
+        schema:
+          type: integer
+          format: int32
       requestBody:
         content:
           application/json:
@@ -16198,6 +16217,62 @@ paths:
       - ApiKeyAuth:
         - ConfigureMobileAppMonitoring
       summary: Update IP masking configuration for mobile app
+      tags:
+      - Mobile App Configuration
+  /api/mobile-app-monitoring/config/{mobileAppId}/session-replay-config:
+    get:
+      description: API request to get the session replay configuration for a mobile
+        app.
+      operationId: getMobileAppSessionReplay
+      parameters:
+      - description: Mobile App ID
+        example: K3bP-bmCRkyimNai9vvq8o
+        in: path
+        name: mobileAppId
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Session replay configuration
+        '401':
+          description: Unauthorized access - requires user authentication.
+        '403':
+          description: Insufficient permissions or limited in access.
+        '500':
+          description: Internal server error.
+      security:
+      - ApiKeyAuth:
+        - ConfigureMobileAppMonitoring
+      summary: Get session replay config for mobile app
+      tags:
+      - Mobile App Configuration
+    put:
+      description: API request to configure session replay for a mobile app.
+      operationId: updateMobileAppSessionReplay
+      parameters:
+      - description: Mobile App ID
+        example: K3bP-bmCRkyimNai9vvq8o
+        in: path
+        name: mobileAppId
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Session replay configuration successfully updated
+        '400':
+          description: Invalid or missing request body
+        '401':
+          description: Unauthorized access - requires user authentication.
+        '403':
+          description: Insufficient permissions or limited in access.
+        '500':
+          description: Internal server error.
+      security:
+      - ApiKeyAuth:
+        - ConfigureMobileAppMonitoring
+      summary: Configure session replay for mobile app
       tags:
       - Mobile App Configuration
   /api/mobile-app-monitoring/config/{mobileAppId}/sourcemap-upload:
@@ -16973,6 +17048,61 @@ paths:
       summary: Get mobile app session
       tags:
       - Mobile App Metrics
+  /api/mobile-app-monitoring/session-merged:
+    get:
+      description: Returns a merged JSON array of all legacy beacons and action beacons
+        for a session, sorted by timestamp ascending. Each entry includes a 'beaconSource'
+        field ('LEGACY' or 'ACTION') and the corresponding beacon payload.
+      operationId: getMergedSessionBeacons
+      parameters:
+      - description: Session identifier
+        example: 9CA9E31D-B0F7-40EC-8D32-FE163A6557AE
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: matrix
+      - description: Beacon timestamp (partition hint for legacy query)
+        example: 1730595029980
+        in: path
+        name: timestamp
+        required: true
+        schema:
+          type: integer
+          format: int64
+        style: matrix
+      - description: Mobile app identifier (required for action beacons)
+        example: KVJIyIPsTUGfvNORN_07uQ
+        in: path
+        name: mobileAppId
+        required: true
+        schema:
+          type: string
+        style: matrix
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UnifiedBeacon'
+          description: OK
+        '400':
+          description: Bad request.
+        '401':
+          description: Unauthorized access - requires user authentication.
+        '404':
+          description: Resource not found.
+        '500':
+          description: Internal server error.
+      security:
+      - ApiKeyAuth:
+        - Default
+      summary: Download merged session beacons
+      tags:
+      - Mobile App Metrics
   /api/mobile-app-monitoring/v2/metrics:
     post:
       description: API request to get mobile app monitoring beacon metrics.
@@ -17061,24 +17191,24 @@ paths:
     get:
       operationId: getAllReleases
       parameters:
-      - in: query
+      - description: The timestamp from where one wants to fetch the release markers.
+        in: query
         name: from
         schema:
           type: integer
           format: int64
-          description: The timestamp from where one wants to fetch the release markers.
-      - in: query
+      - description: The timestamp till where one wants to fetch the release markers.
+        in: query
         name: to
         schema:
           type: integer
           format: int64
-          description: The timestamp till where one wants to fetch the release markers.
-      - in: query
+      - description: The maximum number of release markers to be fetched
+        in: query
         name: maxResults
         schema:
           type: integer
           format: int32
-          description: The maximum number of release markers to be fetched
       responses:
         '200':
           content:
@@ -25535,7 +25665,7 @@ paths:
                   clusterName: test101-pop
                   description: PoP in region test101 for my-kedatest
                   popSnapshotId: null
-                  popVersion: 1.1.2
+                  popVersion: 1.1.3
                 - id: 0po5d5MxSZx91moqCbri
                   label: apminstana-pop
                   displayLabel: apminstana-pop
@@ -26405,7 +26535,7 @@ paths:
               - id: 55bzhnXQ9uqwld4Ha3bD
                 label: Austin
                 displayLabel: AUTO
-                popVersion: 1.1.2
+                popVersion: 1.1.3
                 description: My Location 101
                 locationType: Private
                 playbackCapabilities:
@@ -27864,6 +27994,11 @@ paths:
         name: name
         schema:
           type: string
+      - in: query
+        name: businessCriticality
+        schema:
+          type: integer
+          format: int32
       requestBody:
         content:
           application/json:
@@ -28799,6 +28934,24 @@ components:
         name:
           type: string
           description: The name of the Alerting Channel.
+        testEventType:
+          type: string
+          enum:
+          - INFRA_SMART_ALERT
+          - LOG_SMART_ALERT
+          - APPLICATION_SMART_ALERT
+          - BUILT_IN_EVENT
+          - CUSTOM_EVENT
+        testSeverity:
+          type: string
+          enum:
+          - WARNING
+          - CRITICAL
+        testState:
+          type: string
+          enum:
+          - OPEN
+          - CLOSE
         timezone:
           type: string
           description: The timezone to be used for DateTime
@@ -30274,6 +30427,8 @@ components:
           type: boolean
         canConfigureDatabaseManagement:
           type: boolean
+        canConfigureEntityPayloadTransformationRules:
+          type: boolean
         canConfigureEumApplications:
           type: boolean
         canConfigureEventsAndAlerts:
@@ -30309,6 +30464,8 @@ components:
         canConfigureMaintenanceWindows:
           type: boolean
         canConfigureMobileAppBusinessCriticality:
+          type: boolean
+        canConfigureMobileAppConversions:
           type: boolean
         canConfigureMobileAppMonitoring:
           type: boolean
@@ -30369,6 +30526,8 @@ components:
         canInvokeAlertChannel:
           type: boolean
         canManuallyCloseIssue:
+          type: boolean
+        canPlaybackSessionReplay:
           type: boolean
         canRunAutomationActions:
           type: boolean
@@ -30526,15 +30685,9 @@ components:
           description: Here, `ALL` Application Boundary Scope is considered.
           minLength: 1
         businessCriticality:
-          type: string
-          description: Business criticality level of the application
-          enum:
-          - NOT_DEFINED
-          - LOWEST
-          - LOW
-          - MEDIUM
-          - HIGH
-          - HIGHEST
+          type: integer
+          format: int32
+          description: Represent how critical an application is to their business.
         entityType:
           type: string
           description: Since, this is an Application Perspective, it will be of type
@@ -30628,6 +30781,7 @@ components:
           - PER_AP
           - PER_AP_SERVICE
           - PER_AP_ENDPOINT
+          - CUSTOM
         gracePeriod:
           type: integer
           format: int64
@@ -30648,6 +30802,15 @@ components:
           - 900000
           - 1200000
           - 1800000
+        groupBy:
+          type: array
+          description: The grouping tags used to group the metric results. Only applicable
+            when evaluationType is CUSTOM.
+          items:
+            $ref: '#/components/schemas/GroupByTag'
+          maxItems: 1
+          minItems: 0
+          nullable: true
         includeInternal:
           type: boolean
           description: Flag to include Internal Calls. These calls are work done inside
@@ -30781,6 +30944,10 @@ components:
             by this Smart Alert configuration.
           maxLength: 65536
           minLength: 0
+        displayUrl:
+          type: string
+          description: Absolute URL of this configuration in the Instana UI.
+          readOnly: true
         enabled:
           type: boolean
           description: Flag to indicate whether or not the configuration is enabled.
@@ -30794,6 +30961,7 @@ components:
           - PER_AP
           - PER_AP_SERVICE
           - PER_AP_ENDPOINT
+          - CUSTOM
         gracePeriod:
           type: integer
           format: int64
@@ -30814,6 +30982,15 @@ components:
           - 900000
           - 1200000
           - 1800000
+        groupBy:
+          type: array
+          description: The grouping tags used to group the metric results. Only applicable
+            when evaluationType is CUSTOM.
+          items:
+            $ref: '#/components/schemas/GroupByTag'
+          maxItems: 1
+          minItems: 0
+          nullable: true
         id:
           type: string
           description: 'ID of this Application App Alert Config. '
@@ -30993,16 +31170,11 @@ components:
           - INBOUND
           - DEFAULT
         businessCriticality:
-          type: string
-          description: Business criticality level of the application
-          enum:
-          - NOT_DEFINED
-          - LOWEST
-          - LOW
-          - MEDIUM
-          - HIGH
-          - HIGHEST
-          nullable: true
+          type: integer
+          format: int32
+          description: Business criticality of an application (0-5)
+          maximum: 5
+          minimum: 0
         createdAt:
           type: integer
           format: int64
@@ -31047,7 +31219,6 @@ components:
       required:
       - accessRules
       - boundaryScope
-      - businessCriticality
       - id
       - label
       - scope
@@ -31473,6 +31644,15 @@ components:
             type: string
           github:
             $ref: '#/components/schemas/GitHubConfiguration'
+          profiles:
+            type: array
+            items:
+              type: string
+              enum:
+              - 3G
+              - Fast4G
+              - Slow4G
+              - Offline
           recordVideo:
             type: boolean
           script:
@@ -31504,6 +31684,8 @@ components:
             type: string
           github:
             $ref: '#/components/schemas/GitHubConfiguration'
+          profiles:
+            $ref: '#/components/schemas/SyntheticResourceUpdateListNetworkProfileListNetworkProfile'
           recordVideo:
             type: boolean
           script:
@@ -32538,6 +32720,10 @@ components:
           type: string
           maxLength: 32765
           minLength: 0
+        displayUrl:
+          type: string
+          description: Absolute URL of this configuration in the Instana UI.
+          readOnly: true
         enabled:
           type: boolean
         entityType:
@@ -32705,6 +32891,7 @@ components:
           - KUBERNETES
           - MONGO_DB
           - MSSQL
+          - ORACLE_DB
           - OTHERS
           - POSTGRESQL
           - REDIS
@@ -32870,6 +33057,7 @@ components:
           - KUBERNETES
           - MONGO_DB
           - MSSQL
+          - ORACLE_DB
           - OTHERS
           - POSTGRESQL
           - REDIS
@@ -34083,6 +34271,10 @@ components:
       properties:
         description:
           type: string
+        displayUrl:
+          type: string
+          description: Absolute URL of this configuration in the Instana UI.
+          readOnly: true
         enabled:
           type: boolean
         entityType:
@@ -35558,6 +35750,10 @@ components:
             by this Smart Alert configuration.
           maxLength: 65536
           minLength: 0
+        displayUrl:
+          type: string
+          description: Absolute URL of this configuration in the Instana UI.
+          readOnly: true
         enabled:
           type: boolean
           description: Flag to indicate whether or not the configuration is enabled.
@@ -35571,6 +35767,7 @@ components:
           - PER_AP
           - PER_AP_SERVICE
           - PER_AP_ENDPOINT
+          - CUSTOM
         gracePeriod:
           type: integer
           format: int64
@@ -35591,6 +35788,15 @@ components:
           - 900000
           - 1200000
           - 1800000
+        groupBy:
+          type: array
+          description: The grouping tags used to group the metric results. Only applicable
+            when evaluationType is CUSTOM.
+          items:
+            $ref: '#/components/schemas/GroupByTag'
+          maxItems: 1
+          minItems: 0
+          nullable: true
         id:
           type: string
           description: ID of this Global Application Alert Configuration.
@@ -35731,6 +35937,7 @@ components:
           - PER_AP
           - PER_AP_SERVICE
           - PER_AP_ENDPOINT
+          - CUSTOM
         gracePeriod:
           type: integer
           format: int64
@@ -35751,6 +35958,15 @@ components:
           - 900000
           - 1200000
           - 1800000
+        groupBy:
+          type: array
+          description: The grouping tags used to group the metric results. Only applicable
+            when evaluationType is CUSTOM.
+          items:
+            $ref: '#/components/schemas/GroupByTag'
+          maxItems: 1
+          minItems: 0
+          nullable: true
         includeInternal:
           type: boolean
           description: Flag to include Internal Calls. These calls are work done inside
@@ -36688,6 +36904,10 @@ components:
             Alert configuration.
           maxLength: 65536
           minLength: 0
+        displayUrl:
+          type: string
+          description: Absolute URL of this configuration in the Instana UI.
+          readOnly: true
         enabled:
           type: boolean
         evaluationType:
@@ -37494,6 +37714,10 @@ components:
             configuration.
           maxLength: 65536
           minLength: 0
+        displayUrl:
+          type: string
+          description: Absolute URL of this configuration in the Instana UI.
+          readOnly: true
         enabled:
           type: boolean
         gracePeriod:
@@ -38569,6 +38793,7 @@ components:
           - KUBERNETES
           - MONGO_DB
           - MSSQL
+          - ORACLE_DB
           - OTHERS
           - POSTGRESQL
           - REDIS
@@ -38914,6 +39139,10 @@ components:
             by this Smart Alert configuration.
           maxLength: 65536
           minLength: 0
+        displayUrl:
+          type: string
+          description: Absolute URL of this configuration in the Instana UI.
+          readOnly: true
         enabled:
           type: boolean
           description: Flag to indicate whether or not the configuration is enabled.
@@ -39926,16 +40155,11 @@ components:
           - INBOUND
           - DEFAULT
         businessCriticality:
-          type: string
-          description: Business criticality level of the application
-          enum:
-          - NOT_DEFINED
-          - LOWEST
-          - LOW
-          - MEDIUM
-          - HIGH
-          - HIGHEST
-          nullable: true
+          type: integer
+          format: int32
+          description: Business criticality of an application (0-5)
+          maximum: 5
+          minimum: 0
         label:
           type: string
           description: 'Name of the Application Perspective. Eg: `app1`.'
@@ -39965,7 +40189,6 @@ components:
       required:
       - accessRules
       - boundaryScope
-      - businessCriticality
       - label
       - scope
     NewBusinessPerspectiveConfig:
@@ -40434,11 +40657,16 @@ components:
           type: boolean
           description: Whether the shortcode prefix feature is enabled
           example: true
+        includeInTitle:
+          type: boolean
+          description: Whether the short code should be included in the incident title
+          example: false
         prefix:
           type: string
-          description: The prefix to use for event short codes (e.g., 'INSTANA-',
-            'PROD-')
-          example: INSTANA-
+          description: The prefix to use for event short codes (e.g., 'INSTA-', 'PROD-').
+            Must not exceed 6 characters.
+          example: INSTA-
+          maxLength: 6
     Problem:
       type: object
       properties:
@@ -41495,6 +41723,10 @@ components:
             content.
           maxLength: 65536
           minLength: 0
+        displayUrl:
+          type: string
+          description: Absolute URL of this configuration in the Instana UI.
+          readOnly: true
         enabled:
           type: boolean
           description: Boolean Parameter specifying the enabled state of Service Levels
@@ -41723,6 +41955,10 @@ components:
             content.
           maxLength: 65536
           minLength: 0
+        displayUrl:
+          type: string
+          description: Absolute URL of this configuration in the Instana UI.
+          readOnly: true
         enabled:
           type: boolean
           description: Boolean Parameter specifying the enabled state of Service Levels
@@ -43219,6 +43455,10 @@ components:
             this Smart Alert configuration.
           maxLength: 65536
           minLength: 0
+        displayUrl:
+          type: string
+          description: Absolute URL of this configuration in the Instana UI.
+          readOnly: true
         enabled:
           type: boolean
           description: Flag to indicate whether or not the configuration is enabled.
@@ -43341,6 +43581,10 @@ components:
             this Smart Alert configuration.
           maxLength: 65536
           minLength: 0
+        displayUrl:
+          type: string
+          description: Absolute URL of this configuration in the Instana UI.
+          readOnly: true
         enabled:
           type: boolean
           description: Flag to indicate whether or not the configuration is enabled.
@@ -43904,6 +44148,27 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ICMPValidation'
+    SyntheticResourceUpdateListNetworkProfileListNetworkProfile:
+      type: object
+      properties:
+        add:
+          type: array
+          items:
+            type: string
+            enum:
+            - 3G
+            - Fast4G
+            - Slow4G
+            - Offline
+        remove:
+          type: array
+          items:
+            type: string
+            enum:
+            - 3G
+            - Fast4G
+            - Slow4G
+            - Offline
     SyntheticResourceUpdateListSSLCertificateValidationListSSLCertificateValidation:
       type: object
       properties:
@@ -44934,6 +45199,8 @@ components:
           type: string
         locationId:
           type: string
+        profile:
+          type: string
         runType:
           type: string
           nullable: true
@@ -45712,6 +45979,350 @@ components:
       required:
       - name
       - runnable
+    UnifiedBeacon:
+      type: object
+      properties:
+        accuracyRadius:
+          type: number
+          format: double
+          nullable: true
+        agentVersion:
+          type: string
+          nullable: true
+        appBuild:
+          type: string
+          nullable: true
+        appState:
+          type: string
+          nullable: true
+        appVersion:
+          type: string
+          nullable: true
+        availableMb:
+          type: integer
+          format: int64
+          nullable: true
+        backendTraceId:
+          type: string
+          nullable: true
+        batchSize:
+          type: integer
+          format: int64
+          nullable: true
+        beaconClockskew:
+          type: integer
+          format: int64
+          nullable: true
+        beaconId:
+          type: string
+        beaconSource:
+          type: string
+          description: 'Source table: LEGACY (all_mobile_app_monitoring_beacons) or
+            ACTION (all_session_replay_mobile_app_metadata)'
+          example: LEGACY
+        beaconType:
+          type: string
+          nullable: true
+        bundleIdentifier:
+          type: string
+          nullable: true
+        bytesIngested:
+          type: integer
+          format: int64
+          nullable: true
+        bytesIngestedMetadata:
+          type: integer
+          format: int64
+          nullable: true
+        carrier:
+          type: string
+          nullable: true
+        city:
+          type: string
+          nullable: true
+        clockSkew:
+          type: integer
+          format: int64
+          nullable: true
+        coldStartTimeMs:
+          type: integer
+          format: int64
+          nullable: true
+        connectionType:
+          type: string
+          nullable: true
+        continent:
+          type: string
+          nullable: true
+        continentCode:
+          type: string
+          nullable: true
+        country:
+          type: string
+          nullable: true
+        countryCode:
+          type: string
+          nullable: true
+        currentAppState:
+          type: string
+          nullable: true
+        customEventName:
+          type: string
+          nullable: true
+        customMetric:
+          type: object
+          nullable: true
+        decodedBodySize:
+          type: integer
+          format: int64
+          nullable: true
+        deviceHardware:
+          type: string
+          nullable: true
+        deviceManufacturer:
+          type: string
+          nullable: true
+        deviceModel:
+          type: string
+          nullable: true
+        dropView:
+          type: string
+          nullable: true
+        duration:
+          type: integer
+          format: int64
+          nullable: true
+        effectiveConnectionType:
+          type: string
+          nullable: true
+        encodedBodySize:
+          type: integer
+          format: int64
+          nullable: true
+        errorCount:
+          type: integer
+          format: int64
+          nullable: true
+        errorId:
+          type: string
+          nullable: true
+        errorMessage:
+          type: string
+          nullable: true
+        errorType:
+          type: string
+          nullable: true
+        eventType:
+          type: string
+          nullable: true
+        frustrationSignal:
+          type: string
+          nullable: true
+        googlePlayServicesMissing:
+          type: boolean
+          nullable: true
+        hotStartTimeMs:
+          type: integer
+          format: int64
+          nullable: true
+        httpCallHeaders:
+          type: object
+          additionalProperties:
+            type: string
+          nullable: true
+        httpCallMethod:
+          type: string
+          nullable: true
+        httpCallOrigin:
+          type: string
+          nullable: true
+        httpCallPath:
+          type: string
+          nullable: true
+        httpCallStatus:
+          type: integer
+          format: int64
+          nullable: true
+        httpCallUrl:
+          type: string
+          nullable: true
+        ingestionTime:
+          type: integer
+          format: int64
+          nullable: true
+        internalMeta:
+          type: object
+          additionalProperties:
+            type: string
+          nullable: true
+        keyboardOperation:
+          type: string
+          nullable: true
+        latitude:
+          type: number
+          format: double
+          nullable: true
+        longitude:
+          type: number
+          format: double
+          nullable: true
+        maxMb:
+          type: integer
+          format: int64
+          nullable: true
+        meta:
+          type: object
+          additionalProperties:
+            type: string
+          nullable: true
+        mobileAppId:
+          type: string
+        mobileAppLabel:
+          type: string
+          nullable: true
+        orientationChange:
+          type: string
+          nullable: true
+        osName:
+          type: string
+          nullable: true
+        osVersion:
+          type: string
+          nullable: true
+        parentBeaconId:
+          type: string
+          nullable: true
+        parsedStackTrace:
+          type: string
+          nullable: true
+        performanceSubtype:
+          type: string
+          nullable: true
+        platform:
+          type: string
+          nullable: true
+        rateLimitBeaconType:
+          type: string
+          nullable: true
+        rateLimitCount:
+          type: integer
+          format: int64
+          nullable: true
+        rateLimitCustomMetricVal:
+          type: array
+          items:
+            type: object
+          nullable: true
+        rateLimitTimeMax:
+          type: integer
+          format: int64
+          nullable: true
+        rateLimitTimeMin:
+          type: integer
+          format: int64
+          nullable: true
+        rooted:
+          type: boolean
+          nullable: true
+        scrollDirection:
+          type: string
+          nullable: true
+        scrollDuration:
+          type: string
+          nullable: true
+        sessionId:
+          type: string
+        sessionReplayStatus:
+          type: integer
+          format: int64
+          nullable: true
+        sessionReplayVersion:
+          type: string
+          nullable: true
+        stackTrace:
+          type: string
+          nullable: true
+        stackTraceKeyChecksum:
+          type: string
+          nullable: true
+        stackTraceKeyInformation:
+          type: string
+          nullable: true
+        stackTraceLine:
+          type: array
+          items:
+            type: object
+          nullable: true
+        stackTraceParsingStatus:
+          type: integer
+          format: int64
+          nullable: true
+        subdivision:
+          type: string
+          nullable: true
+        subdivisionCode:
+          type: string
+          nullable: true
+        timestamp:
+          type: integer
+          format: int64
+        transferSize:
+          type: integer
+          format: int64
+          nullable: true
+        type:
+          type: string
+          nullable: true
+        useFeatures:
+          type: array
+          items:
+            type: string
+          nullable: true
+        usedMb:
+          type: integer
+          format: int64
+          nullable: true
+        userEmail:
+          type: string
+          nullable: true
+        userId:
+          type: string
+          nullable: true
+        userIp:
+          type: string
+          nullable: true
+        userLanguages:
+          type: array
+          items:
+            type: string
+          nullable: true
+        userName:
+          type: string
+          nullable: true
+        userSessionId:
+          type: string
+          nullable: true
+        view:
+          type: string
+          nullable: true
+        viewComponentClassName:
+          type: string
+          nullable: true
+        viewComponentId:
+          type: string
+          nullable: true
+        viewportHeight:
+          type: integer
+          format: int32
+          nullable: true
+        viewportWidth:
+          type: integer
+          format: int32
+          nullable: true
+        warmStartTimeMs:
+          type: integer
+          format: int64
+          nullable: true
     UnsupportedHttpPathSegmentMatchingRule:
       type: object
       allOf:
@@ -46602,6 +47213,10 @@ components:
             Alert configuration.
           maxLength: 65536
           minLength: 0
+        displayUrl:
+          type: string
+          description: Absolute URL of this configuration in the Instana UI.
+          readOnly: true
         enabled:
           type: boolean
           description: Flag to indicate whether or not the configuration is enabled.
@@ -46748,6 +47363,10 @@ components:
             Alert configuration.
           maxLength: 65536
           minLength: 0
+        displayUrl:
+          type: string
+          description: Absolute URL of this configuration in the Instana UI.
+          readOnly: true
         enabled:
           type: boolean
           description: Flag to indicate whether or not the configuration is enabled.
@@ -47766,6 +48385,10 @@ components:
             by this Smart Alert configuration.
           maxLength: 65536
           minLength: 0
+        displayUrl:
+          type: string
+          description: Absolute URL of this configuration in the Instana UI.
+          readOnly: true
         enabled:
           type: boolean
           description: Flag to indicate whether or not the configuration is enabled.

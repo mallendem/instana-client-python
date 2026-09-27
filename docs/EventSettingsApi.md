@@ -3583,7 +3583,6 @@ Name | Type | Description  | Notes
 |-------------|-------------|------------------|
 **200** | OK |  -  |
 **401** | Unauthorized access - requires user authentication. |  -  |
-**403** | Insufficient permissions or limited in access. |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -3660,7 +3659,6 @@ This endpoint does not need any parameter.
 |-------------|-------------|------------------|
 **200** | OK |  -  |
 **401** | Unauthorized access - requires user authentication. |  -  |
-**403** | Insufficient permissions or limited in access. |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -4981,7 +4979,7 @@ void (empty response body)
 
 Update shortcode prefix.
 
-Updates the shortcode prefix and enabled state used for events. The prefix will be applied to all new incidents created after this update. For example, setting the prefix to 'PROD-' with enabled=true will result in incident codes like 'PROD-1', 'PROD-2', etc. The enabled field allows explicit control over whether the shortcode feature is active.
+Updates the shortcode prefix and enabled state used for events. The prefix will be applied to all new incidents created after this update. For example, setting the prefix to 'PROD-' with enabled=true will result in incident codes like 'PROD-1', 'PROD-2', etc. The enabled field allows explicit control over whether the shortcode feature is active. If the provided prefix is longer than 6 characters, the request returns HTTP 400 with the message 'Prefix length exceeds maximum length'.
 
 ### Example
 
@@ -5014,7 +5012,7 @@ configuration.api_key['ApiKeyAuth'] = os.environ["API_KEY"]
 with instana_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = instana_client.EventSettingsApi(api_client)
-    prefix_object = {"prefix":"","enabled":false} # PrefixObject | The new prefix configuration including the enabled state
+    prefix_object = {"prefix":"","enabled":false,"includeInTitle":false} # PrefixObject | The new prefix configuration including the enabled state
 
     try:
         # Update shortcode prefix.
@@ -5052,6 +5050,7 @@ Name | Type | Description  | Notes
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | The prefix and enabled state were successfully updated. |  -  |
+**400** | The provided prefix is longer than 6 characters. |  -  |
 **401** | Unauthorized access - requires user authentication. |  -  |
 **403** | Insufficient permissions or limited in access. |  -  |
 
